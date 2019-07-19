@@ -1,39 +1,672 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(cowplot)
+library(glue)
+
+plot_dist_cols <- function(the_data, type = "histogram") {
+  my_plots <- lapply(names(the_data), function(var_x){
+    p <- 
+      ggplot(the_data) +
+      aes_string(var_x)
+    
+    if(is.numeric(the_data[[var_x]])) {
+      # if(length(unique(the_data[[var_x]])) == nrow(the_data)) {
+      #   
+      # }
+      if(type == "histogram") {
+        p <- p + geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
+                                #binwidth=.5,
+                                colour="black", fill="white") +
+          geom_density(aes(y=..density..), alpha=.2, fill="#FF6666") +
+          theme(axis.text.x = element_text(angle = 90, hjust = 1))
+        #print(mean(the_data[[var_x]]))
+      }
+      else {
+        p <- p + geom_density() +
+          theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      }
+    } else {
+      p <- p + geom_bar() +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    } 
+    
+  })
+  plot_grid(plotlist = my_plots)
+}
+
+output_details <- function(datasets, latex = FALSE) {
+  info <- tribble(~name, ~instances, ~features, ~classes)
+  for(dname in datasets) {
+    d <- get(dname)
+    info <- info %>% bind_rows(tibble(name = dname,
+                                      instances = nrow(d),
+                                      features = ncol(d) - 1,
+                                      classes = length(unique(d$class)),
+                                      proportion = paste0("[",glue_collapse(round(as.numeric(prop.table(table(d$class))), 2), sep = "/"), "]")))
+  }
+  if(latex) return(xtable(info))
+  return(info)
+}
+
+```
+
+```{r include=FALSE}
+load(file = "../all.RData")
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(DT)
+library(devtools)
+library(ndata)
+data_numerical_binary_l10 <- c("banknote", "haberman", "skin", "vertebral_column", "weight_height")
+data_numerical_binary_m10 <- c("audit_risk", "ionosphere", "sonar")
+
+# Keel > imbalance > binary > ratio1
+imbalance1 <- c("imb_ecoli_0_vs_1", "imb_glass0", "imb_glass1", "imb_glass6", "imb_haberman", "imb_iris0", "imb_wisconsin")
+```
+
+UCI and Kaggle datasets
+
+* **Numerical**
+  * **Binary**
+    * Less than 10 attributes
+      * [Banknote authentication](#Banknote)
+      * [Haberman's Survival](#Haberman)
+      * [Skin segmentation](#Skin)
+      * [Vertebral column 2](#Vertebral-column-2)
+      * [Weight, height, gender](#Weight-height-gender)
+    * 10 or more attributes
+      * [Audit risk](#Audit-risk)
+      * [Eeg eye state](#Eeg-eye-state)
+      * [Ionospheren](#Ionospheren)
+      * [Sonar](#Sonar)
+  * **Multiclass**
+    * Less than 10 attributes
+      * [Ecoli](#Ecoli)
+      * [Iris](#Iris)
+      * [Life expectancy](#Life-expectancy)
+      * [Seeds](#Seeds)
+      * [Vertebral column 3](#Vertebral-column)
+      * [Wifi localization](#Wifi-localization)
+      * [Yeast](#Yeast)
+* **Mixed**
+  * **Binary**
+
+Keel datasets
+
+* **Imbalanced**
+  * **Binary**
+    * Imbalance ratio between 1.5 and 9
+      * [ecoli_0_vs_1](#ecoli_0_vs_1)
+      * [glass0](#glass0)
+      * [glass1](#glass1)
+      * [glass6](#glass6)
+      * [haberman](#haberman)
+      * [iris0](#iris0)
+      * [winsconsin](#winsconsin)
+    * Imbalance ratio higher than 9
+      * [glass0](#glass2)
+      * [glass1](#glass4)
+      * [glass6](#glass5)
+      * [ecoli4](#ecoli4)
+      * [ecoli_0_1_4_6_vs_5](#ecoli_0_1_4_6_vs_5)
+      * [ecoli_0_6_7_vs_5](#ecoli_0_6_7_vs_5)
+
+  * **Multiclass**
+
+* **Noisy**
+  * **[cn] Class noise**
+    * 
+  * **[an] Attribute noise**
+    * [an_nn] noisy train, noisy test
+      * 5% noise
+      * 20% noise
+    * [an_nc] noisy train, clean test
+      * 5% noise
+      * 20% noise
+    * [an_cn] clean train, noisy test
+      * 5% noise
+      * 20% noise
+
+### Attribute noise
 # Numerical
 
 ## Binary
 
 ### < 10
 
-##### Banknote authentication {#Banknote}
+#### Banknote authentication {#Banknote}
 
-#### haberman
-#### mini_skin
-#### mini_weight_height
-#### vertebral_column
+<!-- Numerical > Binary > Less than 10 attributes --> 
+
+Data were extracted from images that were taken from genuine and forged banknote-like specimens. For digitization, an industrial camera usually used for print inspection was used. The final images have 400x 400 pixels. Due to the object lens and distance to the investigated object gray-scale pictures with a resolution of about 660 dpi were gained. Wavelet Transform tool were used to extract features from images.
+
+* __Source__: [UCI Machile Learning Repository](http://archive.ics.uci.edu/ml/datasets/banknote+authentication)
+* __Classification__: binary
+* __Input features__: numerical
+* __Number of rows__: `r nrow(banknote)`
+* __Number of attributes__: `r ncol(banknote) - 1`
+
+__Description of the attributes:__
+
+* `variance`: variance of wavelet transformed image [numerical]
+* `skewness`: skewness of wavelet transformed image [numerical] 
+* `curtosis`: curtosis of wavelet transformed image [numerical]
+* `entropy`: entropy of the image [numerical] 
+* `class`:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(banknote)
+```
+
+##### Data
+
+```{r}
+banknote
+```
+
+
+##### Related data sets
+
+*`mini_banknote`*
+- The number of rows has been reduced to `r nrow(mini_banknote)`
+
+#### Haberman {#Haberman}
+
+<!-- Numerical > Binary > Less than 10 attributes --> 
+
+The dataset contains cases from a study that was conducted between 1958 and 1970 at the University of Chicago's Billings Hospital on the survival of patients who had undergone surgery for breast cancer.
+
+
+* __Source__: [UCI Machile Learning Repository](http://archive.ics.uci.edu/ml/datasets/Haberman%27s+Survival)
+* __Number of rows__: `r nrow(haberman)`
+* __Number of attributes__: `r ncol(haberman) - 1`
+* __Classification__:* binary
+* __Input features__:* numerical
+
+__Description of the attributes:__
+
+* `age`: Age of patient at time of operation [numerical]
+* `year`: Patient's year of operation [numerical]
+* `nodes`: Number of positive axillary nodes detected [numerical]
+* `class`: Survival status (class attribute) 
+  * 1 = the patient survived 5 years or longer [positive]
+  * 2 = the patient died within 5 year
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(haberman)
+```
+
+#### Skin segmentation {#Skin}
+
+<!-- Numerical > Binary > Less than 10 attributes --> 
+
+The skin dataset is collected by randomly sampling B,G,R values from face images of various age groups (young, middle, and old), race groups (white, black, and asian), and genders obtained from FERET database and PAL database. Total learning sample size is 245057; out of which 50859 is the skin samples and 194198 is non-skin samples. Color FERET Image Database: [Web Link], PAL Face Database from Productive Aging Laboratory, The University of Texas at Dallas: [Web Link]. 
+
+* __Source__: [UCI Machile Learning Repository](https://archive.ics.uci.edu/ml/datasets/Skin+Segmentation)
+* __Number of rows__: `r nrow(skin)`
+* __Number of attributes__: `r ncol(skin) - 1`
+* __Classification__: binary
+* __Input features__: numerical
+
+__Description of the attributes:__
+
+* `red`: [numerical]
+* `green`: [numerical]
+* `blue`: [numerical]
+* `class`:
+  * 1: it is a skin sample [positive]
+  * 2: it is not a skin sample
+  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(skin)
+```
+
+##### Related data sets
+
+*`mini_skin`*
+- The number of rows has been reduced to `r nrow(mini_skin)`
+
+#### Vertebral column 2 {#Vertebral-column-2}
+
+<!-- Numerical > Binary > Less than 10 attributes --> 
+
+Biomedical data set built by Dr. Henrique da Mota during a medical residence period in the Group of Applied Research in Orthopaedics (GARO) of the Centre MÃ©dico-Chirurgical de RÃ©adaptation des Massues, Lyon, France. The task consists in classifying patients as belonging to one out of two categories: Normal (100 patients) or Abnormal (210 patients). We provide files also for use within the WEKA environment.
+
+ Classifying patients as belonging to one out of three categories: Normal (100 patients), Disk Hernia (60 patients) or Spondylolisthesis (150 patients).
+
+* __Source__: [UCI Machile Learning Repository](http://archive.ics.uci.edu/ml/datasets/vertebral+column)
+* __Classification__: binary
+* __Input features__: numerical
+* __Number of rows__: `r nrow(vertebral_column2)`
+* __Number of attributes__: `r ncol(vertebral_column2) - 1`
+
+__Description of the attributes:__
+
+* `pelvic_incidence`:  [numerical]
+* `pelvic_tilt`:  [numerical] 
+* `lumbar_lordosis_angle`:  [numerical]
+* `sacral_slope`:  [numerical] 
+* `pelvic_radius`:  [numerical] 
+* `degree_spondylolisthesis`: [numerical]
+* `class`:
+  * Abnormal: [positive]
+  * Normal:
+  
+##### Related data sets
+
+*`vertebral_column3`*
+- The Abnormal class is divided into Disk Hernia (60 patients) and Spondylolisthesis (150 patients).
+
+#### Weight, height, gender {#Weight-height-gender}
+
+<!-- Numerical > Binary > Less than 10 attributes --> 
+
+weights and heights of males and females
+
+* __Source__: [Kaggle](https://www.kaggle.com/mustafaali96/weight-height)
+* __Classification__: binary
+* __Input features__: numerical
+* __Number of rows__: `r nrow(weight_height)`
+* __Number of attributes__: `r ncol(weight_height) - 1`
+
+__Description of the attributes:__
+
+* `Height`:  [numerical]
+* `Weight`:  [numerical] 
+* `class`:
+  * Male: [positive]
+  * Female:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(weight_height)
+```
+
+##### Related data sets
+
+*`mini_weight_height`*
+- The number of rows has been reduced to `r nrow(mini_weight_height)`
 
 ### >= 10
 
-#### ionosphere
-#### sonar
+#### Audit risk {#Audit-risk}
 
+<!-- Numerical > Binary > 10 or more attributes --> 
+
+Many risk factors are examined from various areas like past records of audit office, audit-paras, environmental conditions reports, firm reputation summary, on-going issues report, profit-value records, loss-value records, follow-up reports etc. After in-depth interview with the auditors, important risk factors are evaluated and their probability of existence is calculated from the present and past records.
+
+The goal of the research is to help the auditors by building a classification model that can predict the fraudulent firm on the basis the present and historical risk factors. The information about the sectors and the counts of firms are listed respectively as Irrigation (114), Public Health (77), Buildings and Roads (82), Forest (70), Corporate (47), Animal Husbandry (95), Communication (1), Electrical (4), Land (5), Science and Technology (3), Tourism (1), Fisheries (41), Industries (37), Agriculture (200).
+
+
+* __Source__: [UCI Machile Learning Repository](https://archive.ics.uci.edu/ml/datasets/Audit+Data)
+* __Classification__: binary
+* __Input features__: numerical
+* __Number of rows__: `r nrow(audit_risk)`
+* __Number of attributes__: `r ncol(audit_risk) - 1`
+
+__Description of the attributes:__
+
+* `att1`:  [numerical]
+* `att2`:  [numerical] 
+* `att3`:  [numerical]
+* `att4`:  [numerical] 
+* `att5`:  [numerical] 
+* `att6`: [numerical]
+* `att7`: [categorical]
+* `class`:
+  * Abnormal: [positive]
+  * Normal:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(audit_risk)
+```
+
+##### Related data sets
+
+*`ifneeded`*
+- Description
+
+
+####  Eeg eye state {#Eeg-eye-state}
+
+<!-- Numerical > Binary > 10 or more attributes --> 
+
+All data is from one numerical EEG measurement with the Emotiv EEG Neuroheadset. The duration of the measurement was 117 seconds. The eye state was detected via a camera during the EEG measurement and added later manually to the file after analysing the video frames. '1' indicates the eye-closed and '0' the eye-open state. All values are in chronological order with the first measured value at the top of the data.
+
+
+
+* __Source__: [UCI Machile Learning Repository](https://archive.ics.uci.edu/ml/datasets/EEG+Eye+State)
+* __Classification__: binary
+* __Input features__: numerical
+* __Number of rows__: `r #nrow(data)`
+* __Number of attributes__: `r #ncol(data) - 1`
+
+__Description of the attributes:__
+
+* `att1`:  [numerical]
+* `att2`:  [numerical] 
+* `att3`:  [numerical]
+* `att4`:  [numerical] 
+* `att5`:  [numerical] 
+* `att6`: [numerical]
+* `att7`: [categorical]
+* `class`:
+  * 0: eyes closed[positive]
+  * 1: eyes open
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot_dist_cols(data)
+```
+
+##### Related data sets
+
+*`mini_egg_eye_state`*
+- The number of rows has been reduced to `r nrow(mini_egg_eye_state)`
+
+
+#### Ionospheren {#Ionospheren}
+
+<!-- Numerical > Binary > 10 or more attributes --> 
+
+This radar data was collected by a system in Goose Bay, Labrador. This system consists of a phased array of 16 high-frequency antennas with a total transmitted power on the order of 6.4 kilowatts. See the paper for more details. The targets were free electrons in the ionosphere. "Good" radar returns are those showing evidence of some type of structure in the ionosphere. "Bad" returns are those that do not; their signals pass through the ionosphere. 
+
+Received signals were processed using an autocorrelation function whose arguments are the time of a pulse and the pulse number. There were 17 pulse numbers for the Goose Bay system. Instances in this databse are described by 2 attributes per pulse number, corresponding to the complex values returned by the function resulting from the complex electromagnetic signal.
+
+* __Source__: [UCI Machile Learning Repository](https://archive.ics.uci.edu/ml/datasets/ionosphere)
+* __Classification__: binary
+* __Input features__: numerical
+* __Number of rows__: `r nrow(ionospheren)`
+* __Number of attributes__: `r ncol(ionospheren) - 1`
+
+__Description of the attributes:__
+
+* `X1-X34`:  [numerical]
+* `class`:
+  * Bad: [positive]
+  * Good:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(ionospheren)
+```
+
+##### Related data sets
+
+*`ionosphere`*
+- The original dataset
+
+#### Sonar {#Sonar}
+
+<!-- Numerical > Binary > 10 or more attributes --> 
+
+contains 111 patterns obtained by bouncing sonar signals off a metal cylinder at various angles and under various conditions. The file "sonar.rocks" contains 97 patterns obtained from rocks under similar conditions. The transmitted sonar signal is a frequency-modulated chirp, rising in frequency. The data set contains signals obtained from a variety of different aspect angles, spanning 90 degrees for the cylinder and 180 degrees for the rock. 
+
+Each pattern is a set of 60 numbers in the range 0.0 to 1.0. Each number represents the energy within a particular frequency band, integrated over a certain period of time. The integration aperture for higher frequencies occur later in time, since these frequencies are transmitted later during the chirp. 
+
+The label associated with each record contains the letter "R" if the object is a rock and "M" if it is a mine (metal cylinder). The numbers in the labels are in increasing order of aspect angle, but they do not encode the angle directly.
+
+
+
+* __Source__: [UCI Machile Learning Repository](http://archive.ics.uci.edu/ml/datasets/connectionist+bench+(sonar,+mines+vs.+rocks))
+* __Classification__: binary
+* __Input features__: numerical
+* __Number of rows__: `r nrow(sonar)`
+* __Number of attributes__: `r ncol(sonar) - 1`
+
+__Description of the attributes:__
+
+* `V1-V60`:  [numerical]
+* `class`:
+  * M: [positive]
+  * R:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(sonar)
+```
+
+##### Related data sets
+
+*`ifneeded`*
+- Description
 
 
 ## Multiclass
 
 ### < 10
 
-#### filtered_ecoli
-#### iris
-#### life_expectancy
-#### seeds
-#### vertebral_column3
-#### wifi_localization
-#### mini_yeast
+#### Ecoli {#Ecoli}
+
+<!-- Numerical > Multiclass > Less than 10 attributes --> 
+
+Desription of the dadtaset
+
+* __Source__: [UCI Machile Learning Repository](https://archive.ics.uci.edu/ml/datasets/ecoli)
+* __Classification__: multiclass
+* __Input features__: numerical
+* __Number of rows__: `r nrow(ecoli)`
+* __Number of attributes__: `r ncol(ecoli) - 1`
+
+__Description of the attributes:__
+
+* `mcg`:  [numerical]
+* `gvh`:  [numerical] 
+* `lip`:  [numerical]
+* `chg`:  [numerical] 
+* `aac`:  [numerical] 
+* `alm1`: [numerical]
+* `alm2`: [categorical]
+* `class`:
+  * cp 
+  * im 
+  * imS 
+  * imL 
+  * imU 
+  * om 
+  * omL 
+  * pp
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(ecoli)
+```
+
+##### Related data sets
+
+*`filtered_ecoli`*
+- Only the classes cp  im  om  pp are mantained. The number of rows is `r nrow(filtered_ecoli)`
+
+#### Iris {#Iris}
+
+The data set contains 3 classes of 50 instances each, where each class refers to a type of iris plant. One class is linearly separable from the other 2; the latter are NOT linearly separable from each other. 
+
+Predicted attribute: class of iris plant. 
+
+This is an exceedingly simple domain. 
+
+This data differs from the data presented in Fishers article (identified by Steve Chadwick, spchadwick '@' espeedaz.net ). The 35th sample should be: 4.9,3.1,1.5,0.2,"Iris-setosa" where the error is in the fourth feature. The 38th sample: 4.9,3.6,1.4,0.1,"Iris-setosa" where the errors are in the second and third features.
+
+* __Source__: [UCI Machile Learning Repository](https://archive.ics.uci.edu/ml/datasets/iris)
+* __Classification__: multiclass
+* __Input features__: numerical
+* __Number of rows__: `r nrow(iris)`
+* __Number of attributes__: `r ncol(iris) - 1`
+
+__Description of the attributes:__
+   
+* `Sepal.Length`:  [numerical]
+* `Sepal.Width`:  [numerical] 
+* `Petal.Length`:  [numerical]
+* `Petal.Width`:  [numerical] 
+* `class`:
+  * Iris-setosa
+  * Iris-versicolor
+  * Iris-virginica
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(iris)
+```
+
+
+#### Life expectancy {#Life-expectancy}
+
+<!-- Numerical > Multiclass > Less than 10 attributes --> 
+
+This dataset contains 6 columns and 223 Rows. Each row corresponds to a country in order of their life expectancy rank. The dataset has three numeric columns, Overall Life Expectancy, Male Life Expectancy and Female Life Expectancy. The last column is Continent, which defines which continent that country lies in. This could be very well used as a class for the data.
+
+This data can be used for classification by various techniques like SVM(linear), KNN, C.45 etc. and other supervised and unsupervised techniques.
+
+* __Source__: [Kaggle](https://www.kaggle.com/amansaxena/lifeexpectancy/version/1)
+* __Classification__: multiclass
+* __Input features__: numerical
+* __Number of rows__: `r nrow(life_expectancy)`
+* __Number of attributes__: `r ncol(life_expectancy) - 1`
+
+__Description of the attributes:__
+
+* `overall `:  [numerical]
+* `male`:  [numerical] 
+* `female `:  [numerical]
+* `class`:
+  * Europe 
+  * Asia 
+  * Oceania 
+  * North 
+  * America 
+  * Africa 
+  * South America
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(life_expectancy)
+```
+
+
+#### Seeds {#Seeds}
+
+<!-- Numerical > Multiclass > Less than 10 attributes --> 
+
+The examined group comprised kernels belonging to three different varieties of wheat: Kama, Rosa and Canadian, 70 elements each, randomly selected for 
+the experiment. High quality visualization of the internal kernel structure was detected using a soft X-ray technique. It is non-destructive and considerably cheaper than other more sophisticated imaging techniques like scanning microscopy or laser technology. The images were recorded on 13x18 cm X-ray KODAK plates. Studies were conducted using combine harvested wheat grain originating from experimental fields, explored at the Institute of Agrophysics of the Polish Academy of Sciences in Lublin. 
+
+The data set can be used for the tasks of classification and cluster analysis.
+
+* __Source__: [UCI Machile Learning Repository](https://archive.ics.uci.edu/ml/datasets/seeds)
+* __Classification__: multiclass
+* __Input features__: numerical
+* __Number of rows__: `r nrow(seeds)`
+* __Number of attributes__: `r ncol(seeds) - 1`
+
+__Description of the attributes:__
+
+* `area`:  [numerical]
+* `perimeter`:  [numerical] 
+* `compactness`:   C = 4*pi*A/P^2,  [numerical]
+* `length_kernel`:  [numerical] 
+* `width_kernel`:  [numerical] 
+* `asymmetry_coefficient`: [numerical]
+* `length_kernel_groove`: [numerical]
+* `class`:
+  * 1
+  * 2
+  * 3
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(seeds)
+```
+
+
+#### Vertebral column 3 {#Vertebral-column}
+
+<!-- Numerical > Multiclass > Less than 10 attributes --> 
+
+ref a vertebral column 2 aunque sí que escribir descripción aquí
+
+#### Wifi localization {#Wifi-localization}
+
+<!-- Numerical > Multiclass > Less than 10 attributes --> 
+
+Collected to perform experimentation on how wifi signal strengths can be used to determine one of the indoor locations.
+
+* __Source__: [UCI Machile Learning Repository](https://archive.ics.uci.edu/ml/datasets/Wireless+Indoor+Localization)
+* __Classification__: multiclass
+* __Input features__: numerical
+* __Number of rows__: `r nrow(wifi_localization)`
+* __Number of attributes__: `r ncol(wifi_localization) - 1`
+
+__Description of the attributes:__
+
+* `att1`:  [numerical]
+* `att2`:  [numerical] 
+* `att3`:  [numerical]
+* `att4`:  [numerical] 
+* `att5`:  [numerical] 
+* `att6`: [numerical]
+* `class`:
+  * 1
+  * 2
+  * 3
+  * 4
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(wifi_localization)
+```
+
+##### Related data sets
+
+*`mini_wifi_localization`*
+- Description
+
+#### Yeast {#Yeast}
+
+<!-- Numerical > Multiclass > Less than 10 attributes --> 
+
+Desription of the dadtaset
+
+* __Source__: [UCI Machile Learning Repository](http://archive.ics.uci.edu/ml/datasets/yeast)
+* __Classification__: multiclass
+* __Input features__: numerical
+* __Number of rows__: `r nrow(yeast)`
+* __Number of attributes__: `r ncol(yeast) - 1`
+
+El original tiene un atributo mas Sequence Name: Accession number for the SWISS-PROT database 
+
+__Description of the attributes:__
+
+* `mcg`: McGeoch's method for signal sequence recognition.  [numerical]
+* `gvh`: von Heijne's method for signal sequence recognition.  [numerical] 
+* `alm`: Score of the ALOM membrane spanning region prediction program.  [numerical]
+* `mit`: Score of discriminant analysis of the amino acid content of the N-terminal region (20 residues long) of mitochondrial and non-mitochondrial proteins.  [numerical] 
+* `erl`: Presence of "HDEL" substring (thought to act as a signal for retention in the endoplasmic reticulum lumen). Binary attribute.  [numerical] 
+* `pox`: Peroxisomal targeting signal in the C-terminus.  [numerical]
+* `vac`: Score of discriminant analysis of the amino acid content of vacuolar and extracellular proteins.  [numerical]
+* `nuc`: Score of discriminant analysis of nuclear localization signals of nuclear and non-nuclear proteins. [numerical]
+* `class`:
+  * CYT 
+  * ERL 
+  * EXC 
+  * ME1 
+  * ME2 
+  * ME3 
+  * MIT 
+  * NUC 
+  * POX 
+  * VAC
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_dist_cols(yeast)
+```
+
+##### Related data sets
+
+*`mini_yeast`*
+- Description
+
+*`mini_yeast_cc`*
+- Description
 
 ### >=10
 
@@ -80,4 +713,120 @@ output: html_notebook
 #### zoo
 
 
+# Keel
+
+## Imbalanced
+
+Imbalanced data sets are a special case of classification problem where the class distribution is not uniform among the classes. Typically, they are composed by two classes: The majority (negative) class and the minority (positive) class. 
+
+
+### Binary
+
+#### Binary: Imbalance ratio between 1.5 and 9
+
+```{r}
+output_details(imbalance1)
+```
+
+```{r echo=FALSE}
+imb_ecoli_0_vs_1
+```
+
+```{r echo=FALSE}
+plot_dist_cols(imb_ecoli_0_vs_1)
+```
+
+```{r echo=FALSE}
+imb_glass0
+```
+
+```{r echo=FALSE}
+plot_dist_cols(imb_glass0)
+```
+
+```{r echo=FALSE}
+imb_glass1
+```
+
+```{r echo=FALSE}
+plot_dist_cols(imb_glass1)
+```
+
+```{r echo=FALSE}
+imb_glass6
+```
+
+```{r echo=FALSE}
+plot_dist_cols(imb_glass6)
+```
+
+```{r echo=FALSE}
+imb_haberman
+```
+
+```{r echo=FALSE}
+plot_dist_cols(imb_haberman)
+```
+
+```{r echo=FALSE}
+imb_iris0
+```
+
+```{r echo=FALSE}
+plot_dist_cols(imb_iris0)
+```
+
+```{r echo=FALSE}
+imb_wisconsin
+```
+
+```{r echo=FALSE}
+plot_dist_cols(imb_wisconsin)
+```
+
+#### Binary: Imbalance ratio higher than 9
+
+### Multiclass
+
+## Noisy
+
+### Class noise
+
+### Attribute noise
+
 "mini_chess"
+
+
+Template::::
+
+<!-- Numerical > Multiclass > Less than 10 attributes --> 
+
+Desription of the dadtaset
+
+* __Source__: [UCI Machile Learning Repository](url)
+* __Classification__: multiclass
+* __Input features__: numerical
+* __Number of rows__: `r #nrow(data)`
+* __Number of attributes__: `r #ncol(data) - 1`
+
+__Description of the attributes:__
+
+* `att1`:  [numerical]
+* `att2`:  [numerical] 
+* `att3`:  [numerical]
+* `att4`:  [numerical] 
+* `att5`:  [numerical] 
+* `att6`: [numerical]
+* `att7`: [categorical]
+* `class`:
+  * Abnormal: [positive]
+  * Normal:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot_dist_cols(data)
+```
+
+##### Related data sets
+
+*`ifneeded`*
+- Description
