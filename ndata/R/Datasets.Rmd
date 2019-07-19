@@ -70,6 +70,15 @@ data_numerical_binary_m10 <- c("audit_risk", "ionosphere", "sonar")
 
 # Keel > imbalance > binary > ratio1
 imbalance1 <- c("imb_ecoli_0_vs_1", "imb_glass0", "imb_glass1", "imb_glass6", "imb_haberman", "imb_iris0", "imb_wisconsin")
+imbalance2 <- c("imb_ecoli4", 
+                "imb_ecoli_0_1_4_6_vs_5", 
+                "imb_ecoli_0_1_4_7_vs_2_3_5_6",
+                "imb_ecoli_0_1_4_7_vs_5_6",
+                "imb_ecoli_0_6_7_vs_5",
+                "imb_glass2", 
+                "imb_glass4", 
+                "imb_glass5",
+                "imb_yeast_0_3_5_9_vs_7_8") # "imb_yeast6",
 ```
 
 UCI and Kaggle datasets
@@ -112,12 +121,23 @@ Keel datasets
       * [iris0](#iris0)
       * [winsconsin](#winsconsin)
     * Imbalance ratio higher than 9
+      * [ecoli4](#ecoli4)
+      * [ecoli_0_1_4_6_vs_5](#ecoli_0_1_4_6_vs_5)
+      * [imb_ecoli_0_1_4_7_vs_2_3_5_6](#imb_ecoli_0_1_4_7_vs_2_3_5_6)
+      * [imb_ecoli_0_1_4_7_vs_5_6](#imb_ecoli_0_1_4_7_vs_5_6)
+      * [ecoli_0_6_7_vs_5](#ecoli_0_6_7_vs_5)
       * [glass0](#glass2)
       * [glass1](#glass4)
       * [glass6](#glass5)
-      * [ecoli4](#ecoli4)
-      * [ecoli_0_1_4_6_vs_5](#ecoli_0_1_4_6_vs_5)
-      * [ecoli_0_6_7_vs_5](#ecoli_0_6_7_vs_5)
+      
+      imbalance2 <- c("imb_ecoli4", 
+                "imb_ecoli_0_1_4_6_vs_5", 
+                
+                "imb_ecoli_0_6_7_vs_5",
+                "imb_glass2", 
+                "imb_glass4", 
+                "imb_glass5",
+                "imb_yeast_0_3_5_9_vs_7_8")
 
   * **Multiclass**
 
@@ -135,7 +155,6 @@ Keel datasets
       * 5% noise
       * 20% noise
 
-### Attribute noise
 # Numerical
 
 ## Binary
@@ -713,12 +732,12 @@ plot_dist_cols(yeast)
 #### zoo
 
 
+
 # Keel
 
 ## Imbalanced
 
 Imbalanced data sets are a special case of classification problem where the class distribution is not uniform among the classes. Typically, they are composed by two classes: The majority (negative) class and the minority (positive) class. 
-
 
 ### Binary
 
@@ -784,8 +803,83 @@ imb_wisconsin
 plot_dist_cols(imb_wisconsin)
 ```
 
+
 #### Binary: Imbalance ratio higher than 9
 
+      * [ecoli4](#ecoli4)
+      * [ecoli_0_1_4_6_vs_5](#ecoli_0_1_4_6_vs_5)
+      * [ecoli_0_1_4_7_vs_2_3_5_6](#imb_ecoli_0_1_4_7_vs_2_3_5_6)
+      * [ecoli_0_1_4_7_vs_5_6](#imb_ecoli_0_1_4_7_vs_5_6)
+      * [ecoli_0_6_7_vs_5](#ecoli_0_6_7_vs_5)
+      * [glass2](#glass2)
+      * [glass4](#glass4)
+      * [glass5](#glass5)
+      
+```{r}
+imb_ecoli4
+```
+      
+```{r}
+plot_dist_cols(imb_ecoli4)
+```
+
+```{r}
+imb_ecoli_0_1_4_6_vs_5
+```
+      
+```{r}
+plot_dist_cols(imb_ecoli_0_1_4_6_vs_5)
+```
+
+```{r}
+imb_ecoli_0_1_4_7_vs_2_3_5_6
+```
+      
+```{r}
+plot_dist_cols(imb_ecoli_0_1_4_7_vs_2_3_5_6)
+```
+
+```{r}
+imb_ecoli_0_1_4_7_vs_5_6
+```
+      
+```{r}
+plot_dist_cols(imb_ecoli_0_1_4_7_vs_5_6)
+```
+
+
+```{r}
+imb_ecoli_0_6_7_vs_5
+```
+      
+```{r}
+plot_dist_cols(imb_ecoli_0_6_7_vs_5)
+```
+
+```{r}
+imb_glass2
+```
+      
+```{r}
+plot_dist_cols(imb_glass2)
+```
+
+```{r}
+imb_glass4
+```
+      
+```{r}
+plot_dist_cols(imb_glass4)
+```
+
+```{r}
+imb_glass5
+```
+      
+```{r}
+plot_dist_cols(imb_glass5)
+```
+      
 ### Multiclass
 
 ## Noisy
@@ -794,10 +888,7 @@ plot_dist_cols(imb_wisconsin)
 
 ### Attribute noise
 
-"mini_chess"
-
-
-Template::::
+## 
 
 <!-- Numerical > Multiclass > Less than 10 attributes --> 
 
