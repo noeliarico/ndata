@@ -6,7 +6,7 @@ balance <- balance[, c("class", setdiff(colnames(balance), "class"))]
 balancen <- balance %>% mutate_at(change, function(x) {as.numeric(as.character(x))})
 
 set.seed(123)
-inf <- createDataPartition(balance$class, p = 0.5, list = FALSE)
+ind <- createDataPartition(balance$class, p = 0.5, list = FALSE)
 mini_balance <- balance[ind,]
 mini_balancen <- balancen[ind,]
 save(balance, balancen,

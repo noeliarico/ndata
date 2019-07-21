@@ -47,6 +47,7 @@ adult <- read_csv("files/adult.csv",
                                    capital_loss = col_number(),
                                    hours_per_week = col_number()))
 adult <- adult[, c("class", setdiff(colnames(adult), "class"))]
+adult <- adult %>% mutate(class = fct_relevel(class, ">50K", "<=50K"))
 adult_original <- adult
 adult$fnlwgt <- NULL
 
@@ -106,6 +107,16 @@ caesariann <- caesarian %>% mutate_at(change, function(x) {as.numeric(as.charact
 
 save(caesarian, caesariann, file = "caesarian.RData")
 
+
+# Cpu ---------------------------------------------------------------------
+
+cpu <- read.arff("files/cpu.arff") %>% as_tibble()
+cpu <- cpu[, c("class", setdiff(colnames(cpu), "class"))]
+cpu_discretized <- cpu
+cpu_discretized$class <- (discretize(cpu$class, breaks = 2))
+
+save(cpu, cpu_discretized, file = "cpu.RData")
+
 # Contraceptive -----------------------------------------------------------
 
 # ya cargado en imbalance
@@ -129,6 +140,7 @@ save(ecoli, filtered_ecoli, file = "data/ecoli.RData")
 egg_eye_state <- read.arff(file.path("files", "eeg_eye_state.arff"))
 egg_eye_state <- as_tibble(egg_eye_state) %>% rename(class = eyeDetection)
 egg_eye_state <- egg_eye_state[, c("class", setdiff(colnames(egg_eye_state), "class"))]
+egg_eye_state <- egg_eye_state %>% mutate(class = fct_relevel(class, "1", "0"))
 
 set.seed(123)
 mini_egg_eye_state <- createDataPartition(egg_eye_state$class, p = 0.01, list = FALSE)
@@ -282,7 +294,7 @@ colnames(seeds) <- c("area",
                      "asymmetry_coefficient",
                      "length_kernel_groove",
                      "class")
-seeds <- as_tibble(seeds)
+seeds <- as_tibble(seeds) %>% mutate(class = as.factor(class))
 seeds <- seeds[, c("class", setdiff(colnames(seeds), "class"))]
 
 save(seeds, file = "data/seeds.RData")
@@ -487,6 +499,8 @@ data_info <- tribble(~name, ~RData,
                      "mini_banknote", "banknote",
                      "caesarian", "caesarian",
                      "caesarian", "caesariann",
+                     "cpu", "cpu",
+                     "cpu_discretized", "cpu",
                      "ecoli", "ecoli",
                      "filtered_ecoli", "ecoli",
                      "egg_eye_state", "egg_eye_state",

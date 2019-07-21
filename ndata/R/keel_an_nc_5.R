@@ -251,6 +251,17 @@ sonar_5an_nc_5_5tra <- sonar_5an_nc_5_5tra %>% mutate_at(change, function(x) {as
 sonar_5an_nc_5_5tst <- sonar_5an_nc_5_5tst %>% mutate_at(change, function(x) {as.numeric(as.character(x))}) %>%
   rename(class = Type)
 
+sonar_5an_nc_5_1tra <- sonar_5an_nc_5_1tra %>% mutate(class = fct_relevel(class, "R", "M"))
+sonar_5an_nc_5_1tst <- sonar_5an_nc_5_1tst %>% mutate(class = fct_relevel(class, "R", "M"))
+sonar_5an_nc_5_2tra <- sonar_5an_nc_5_2tra %>% mutate(class = fct_relevel(class, "R", "M"))
+sonar_5an_nc_5_2tst <- sonar_5an_nc_5_2tst %>% mutate(class = fct_relevel(class, "R", "M"))
+sonar_5an_nc_5_3tra <- sonar_5an_nc_5_3tra %>% mutate(class = fct_relevel(class, "R", "M"))
+sonar_5an_nc_5_3tst <- sonar_5an_nc_5_3tst %>% mutate(class = fct_relevel(class, "R", "M"))
+sonar_5an_nc_5_4tra <- sonar_5an_nc_5_4tra %>% mutate(class = fct_relevel(class, "R", "M"))
+sonar_5an_nc_5_4tst <- sonar_5an_nc_5_4tst %>% mutate(class = fct_relevel(class, "R", "M"))
+sonar_5an_nc_5_5tra <- sonar_5an_nc_5_5tra %>% mutate(class = fct_relevel(class, "R", "M"))
+sonar_5an_nc_5_5tst <- sonar_5an_nc_5_5tst %>% mutate(class = fct_relevel(class, "R", "M"))
+
 sonar_5an_nc_5_1tra <- sonar_5an_nc_5_1tra[, c("class", setdiff(colnames(sonar_5an_nc_5_1tra), "class"))]
 sonar_5an_nc_5_1tst <- sonar_5an_nc_5_1tst[, c("class", setdiff(colnames(sonar_5an_nc_5_1tst), "class"))]
 sonar_5an_nc_5_2tra <- sonar_5an_nc_5_2tra[, c("class", setdiff(colnames(sonar_5an_nc_5_2tra), "class"))]

@@ -44,6 +44,18 @@ ecoli_0_6_7_vs_5 <- ecoli_0_6_7_vs_5[, c("class", setdiff(colnames(ecoli_0_6_7_v
 ecoli_0_6_7_vs_5 <- ecoli_0_6_7_vs_5 %>% mutate(class = fct_relevel(class, "positive", "negative"))
 save(ecoli_0_6_7_vs_5, file = "data/ecoli_0_6_7_vs_5.RData")
 
+
+# dermatology-6 -----------------------------------------------------------
+
+dermatology_6 <- read.keel("files/keel/imbalance/ratio2/dermatology-6.dat")
+dermatology_6 <- dermatology_6 %>% as_tibble() %>% rename(class = Class) %>% mutate(Age = as.numeric(as.character(Age)))
+dermatology_6 <- dermatology_6[, c("class", setdiff(colnames(dermatology_6), "class"))]
+
+change <- colnames(dermatology_6)[colnames(dermatology_6) != "class"]
+dermatology_6n <- dermatology_6 %>% mutate_at(change, function(x) {as.numeric(as.character(x))})
+
+save(dermatology_6, dermatology_6n, file = "data/dermatology_6.RData")
+
 # glass2 ------------------------------------------------------------------
 
 glass2 <- read.keel("files/keel/imbalance/ratio2/glass2.dat")

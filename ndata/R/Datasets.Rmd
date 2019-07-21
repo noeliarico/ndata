@@ -6,6 +6,15 @@ output:
 ---
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+options(warn=-1)
+library(DT)
+library(devtools)
+library(tidyverse)
+library(cowplot)
+library(glue)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 data_numerical_binary_l10 <- c("banknote", "haberman", "skin", "vertebral_column2", "weight_height")
 data_numerical_binary_m10 <- c("audit_risk", "ionospheren", "sonar")
 data_numerical_binary <- c(data_numerical_binary_l10, data_numerical_binary_m10)
@@ -14,7 +23,7 @@ data_numerical_multiclass_m10 <- c("mini_waves")
 data_mixed_binary_l10 <- c("caesarian", "mini_mammographic_masses")#, "primary_tumor")
 data_mixed_binary_m10 <- c( "mini_adult", "mini_travel_insurance", "statlog")#"ionosphere", 
 data_mixed_multiclass <- c("flags", "teaching_assistant", "contraceptive")#"mini_abalone"
-data_mixes_binary <- c(mix_binary_l10, mix_binary_m10)
+data_mixes_binary <- c(data_mixed_binary_l10, data_mixed_binary_m10)
 
 # Keel 
 imbalance1 <- c("ecoli_0_vs_1", "iris0", "glass0", "glass1", "glass6", "haberman", "iris0", "wisconsin")
@@ -29,16 +38,31 @@ imbalance2 <- c("ecoli4",
                 "yeast_0_3_5_9_vs_7_8") # "yeast6",
 imbalance_multiclassn <- c("ecoli", "glass", "new_thyroid", "penbased", "shuttle", "wine", "yeast")
 imbalance_multiclassc <- c("contraceptive", "balance", "hayes_roth")
+load("../all.RData")
+
+noisy_data_info <- tribble(~name, ~RData)
+
+# Noisy
+nnames <- c("ecoli", "wine", "ionosphere", "sonar")
+sufixes <- apply(expand.grid("5_", 1:5, c("tra", "tst")), 1, glue_collapse)
+
+an_cn_20 <- apply(expand.grid(nnames, "_20an_cn_", sufixes), 1, glue_collapse)
+noisy_data_info <- noisy_data_info %>% bind_rows(tibble(name = an_cn_20, RData = rep(paste0(nnames, "_20an_cn"), 10)))
+an_cn_5 <- apply(expand.grid(nnames, "_5an_cn_", sufixes), 1, glue_collapse)
+noisy_data_info <- noisy_data_info %>% bind_rows(tibble(name = an_cn_5, RData = rep(paste0(nnames, "_5an_cn"), 10)))
+
+an_nc_20 <- apply(expand.grid(nnames, "_20an_nc_", sufixes), 1, glue_collapse)
+noisy_data_info <- noisy_data_info %>% bind_rows(tibble(name = an_nc_20, RData = rep(paste0(nnames, "_20an_nc"), 10)))
+an_nc_5 <- apply(expand.grid(nnames, "_5an_cn_", sufixes), 1, glue_collapse)
+noisy_data_info <- noisy_data_info %>% bind_rows(tibble(name = an_nc_5, RData = rep(paste0(nnames, "_5an_nc"), 10)))
+
+an_nn_20 <- apply(expand.grid(nnames, "_20an_nn"), 1, glue_collapse)
+noisy_data_info <- noisy_data_info %>% bind_rows(tibble(name = an_nn_20, RData = paste0(nnames, "_20an_nn")))
+an_nn_5 <- apply(expand.grid(nnames, "_5an_nn"), 1, glue_collapse)
+noisy_data_info <- noisy_data_info %>% bind_rows(tibble(name = an_nn_5, RData = paste0(nnames, "_5an_nn")))
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-options(warn=-1)
-library(DT)
-library(devtools)
-library(tidyverse)
-library(cowplot)
-library(glue)
-
 plot_dist_cols <- function(the_data, type = "histogram") {
   my_plots <- lapply(names(the_data), function(var_x){
     p <- 
@@ -70,22 +94,40 @@ plot_dist_cols <- function(the_data, type = "histogram") {
   plot_grid(plotlist = my_plots)
 }
 
+numcat <- function(dataset) {
+  n <- sum(sapply(dataset, is.numeric))
+  c <- sum(sapply(dataset, is.factor)) - 1
+  out <- paste0("[", n, "/", c, "]")
+  out
+}
+
+type <- function(dataset) {
+  n <- sum(sapply(dataset, is.numeric))
+  c <- sum(sapply(dataset, is.factor)) - 1
+  out <- ifelse(n == 0, "categorical", ifelse(c == 0, "numerical", "mixed"))
+  out
+}
+
 output_details <- function(datasets, latex = FALSE) {
-  info <- tribble(~name, ~instances, ~features, ~classes, ~class_names, ~proportion, ~imbalance_ratio)
+  info <- tribble(~name, ~type, ~instances, ~features, ~num_cat, ~classes, ~class_names, ~proportion, ~imbalance_ratio)
   for(dname in datasets) {
     print(dname)
     d <- get(dname)
     info <- info %>% bind_rows(tibble(name = dname,
+                                      type = factor(type(d)),
                                       instances = nrow(d),
                                       features = ncol(d) - 1,
+                                      num_cat = numcat(d),
                                       classes = length(unique(d$class)),
                                       class_names = paste0("[",glue_collapse(names(table(d$class)), sep = "/"), "]"),
                                       proportion = paste0("[",glue_collapse(round(as.numeric(prop.table(table(d$class))), 2), sep = "/"), "]"), 
-                                      imbalance_ratio = ifelse(length(names(table(d$class))) == 2, max(((table(d$class)[1])/(table(d$class)[2])), ((table(d$class)[2])/(table(d$class)[1]))), -1 )))
+                                      imbalance_ratio = round(ifelse(length(names(table(d$class))) == 2, max(((table(d$class)[1])/(table(d$class)[2])), ((table(d$class)[2])/(table(d$class)[1]))), -1 ), 2)))
   }
   if(latex) return(xtable(info))
   return(info)
 }
+
+
 ```
 
 UCI and Kaggle datasets
@@ -162,6 +204,114 @@ Keel datasets
     * [an_cn] clean train, noisy test
       * 5% noise
       * 20% noise
+
+```{r include=FALSE}
+data_info <- tribble(~name, ~RData,
+                     #"abalone", "abalone",
+                     "abalone_sex", "abalone",
+                     "mini_abalone_sex", "abalone",
+                     "adult_original", "adult",
+                     "adult", "adult",
+                     "balance", "balance",
+                     "balancen", "balance",
+                     "mini_balance", "balance",
+                     "mini_balancen", "balance",
+                     "mini_adult", "adult",
+                     "audit_risk", "audit_risk",
+                     "mini_audit_risk", "audit_risk",
+                     "banknote", "banknote",
+                     "mini_banknote", "banknote",
+                     "caesarian", "caesarian",
+                     "caesarian", "caesariann",
+                     "contraceptive", "contraceptive",
+                     "contraceptiven", "contraceptive",
+                     "mini_contraceptive", "mini_contraceptive",
+                     "mini_contraceptiven", "mini_contraceptive",
+                     #"cpu", "cpu", 
+                     "cpu_discretized", "cpu", 
+                     "ecoli", "ecoli",
+                     "ecoli4", "ecoli4",
+                     "ecoli_0_vs_1", "ecoli_0_vs_1", 
+                     "ecoli_0_1_4_6_vs_5", "ecoli_0_1_4_6_vs_5",
+                     "ecoli_0_1_4_7_vs_2_3_5_6", "ecoli_0_1_4_7_vs_2_3_5_6",
+                     "ecoli_0_1_4_7_vs_5_6", "ecoli_0_1_4_7_vs_5_6",
+                     "ecoli_0_6_7_vs_5", "ecoli_0_6_7_vs_5",
+                     "filtered_ecoli", "ecoli",
+                     "glass", "glass",
+                     "glass0", "glass0", 
+                     "glass1", "glass1", 
+                     "glass2", "glass2",
+                     "glass4", "glass4",
+                     "glass5", "glass5",
+                     "glass6", "glass6", 
+                     "haberman", "haberman", 
+                     "hayes_roth", "hayes_roth",
+                     "hayes_rothn", "hayes_roth",
+                     "egg_eye_state", "egg_eye_state",
+                     "mini_egg_eye_state", "egg_eye_state",
+                     "flags", "flags",
+                     "haberman", "haberman",
+                     "ionosphere", "ionosphere",
+                     "ionospheren", "ionosphere",
+                     "iris", "iris",
+                     "iris0", "iris0", 
+                     "life_expectancy", "life_expectancy",
+                     "mammographic_masses_original", "mammographic_masses",
+                     "mammographic_masses", "mammographic_masses",
+                     "mini_mammographic_masses", "mammographic_masses",
+                     "mammographic_massesn", "mammographic_masses",
+                     "mini_mammographic_massesn", "mammographic_masses",
+                     "new_thyroid", "new_thyroid",
+                     "primary_tumor", "primary_tumor",
+                     "primary_tumorn", "primary_tumor",
+                     "primary_tumor_original", "primary_tumor",
+                     "penbased", "penbased",
+                     "mini_penbased", "penbased",
+                     "seeds", "seeds",
+                     "skin", "skin",
+                     "mini_skin", "skin",
+                     "sonar", "sonar",
+                     "shuttle", "shuttle",
+                     "mini_shuttle", "shuttle",
+                     "wine", "wine",
+                     #"teaching_assistant", "teaching_assistant",
+                     "teaching_assistant_score", "teaching_assistant",
+                     "teaching_assistant_native", "teaching_assistant",
+                     "vertebral_column2","vertebral_column",
+                     "vertebral_column3", "vertebral_column",
+                     "weight_height", "weight_height",
+                     "mini_weight_height", "weight_height",
+                     "waves", "waves",
+                     "mini_waves", "waves",
+                     "wifi_localization", "wifi_localization",
+                     "mini_wifi_localization", "wifi_localization",
+                     "wisconsin", "wisconsin",
+                     "yeast", "yeast",
+                     "mini_yeast", "yeast",
+                     "mini_yeast_cc", "yeast",
+                     "yeast6", "yeast6",
+                     "yeast_0_3_5_9_vs_7_8", "yeast_0_3_5_9_vs_7_8"
+)
+
+details <- output_details(data_info$name)
+details_noisy <- output_details(noisy_data_info$name)
+```
+
+Data
+
+```{r echo=FALSE}
+datatable(details, filter = 'top', options = list(
+  pageLength = 5, selection = "none", autoWidth = FALSE, scrollX = TRUE
+))
+```
+
+Noisy data
+
+```{r echo=FALSE}
+datatable(details_noisy, filter = 'top', options = list(
+  pageLength = 5, selection = "none", autoWidth = FALSE, scrollX = TRUE
+))
+```
 
 # Numerical
 
