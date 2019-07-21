@@ -1,0 +1,444 @@
+---
+title: "Ranking rules"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(ggforce)
+library(consensus)
+color_manhattan <- "Turquoise"
+color_euclidean <- "Hot Pink"
+color_chebyshev <- "Gold"
+color_circle <- "black"
+color_triangle <- "ForestGreen"
+color_square <- "Dark Slate Gray"
+# color_manhattan <- "blue"
+# color_euclidean <- "red"
+# color_chebyshev <- "green"
+```
+
+```{r include=FALSE}
+points <- tribble(~ x, ~ y,
+                  0, 0,
+                  3, 0,
+                  2, 1,
+                  1, 2,
+                  0, 3,
+                  2, 2,
+                 -1, -sqrt(7)) %>%
+                 #-2, -2) %>%
+  mutate(name = c("X", LETTERS[1:(n()-1)]),
+         class = factor(c("circle", "square", "square", "triangle", "triangle", "triangle", "square"), levels = c("circle", "triangle", "square"))) 
+```
+
+Dados los siguientes puntos:
+
+```{r echo=FALSE}
+ggplot() +
+  geom_point(aes(x, y), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+Calculamos los puntos más cercanos a X utilizando las distancias:
+
+* Manhattan
+* Euclidea
+* Chebyshev
+
+__Manhattan__
+
+```{r echo=FALSE}
+manhattan <- as.matrix(dist(points[,-c(3,4)], method = "manhattan"))[1,-1]
+names(manhattan) <- LETTERS[1:length(manhattan)]
+manhattan
+```
+
+```{r echo=FALSE}
+ggplot() +
+  # Manhattan
+  geom_polygon(aes(x=c(-3,0,3,0), y = c(0,3,0,-3), linetype = b), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_point(aes(x, y), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+```{r echo=FALSE}
+ggplot() +
+  # Manhattan
+  geom_polygon(aes(x=c(-3,0,3,0), y = c(0,3,0,-3), linetype = b), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-(sqrt(7)+1),0,(sqrt(7)+1),0), y = c(0,(sqrt(7)+1),0,-(sqrt(7)+1))), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  
+  
+  geom_point(aes(x, y), data = points, size = 6) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") + 
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+```{r echo=FALSE}
+ggplot() +
+  # Manhattan
+  geom_polygon(aes(x=c(-3,0,3,0), y = c(0,3,0,-3), linetype = b), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-4,0,4,0), y = c(0,4,0,-4)), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-(sqrt(7)+1),0,(sqrt(7)+1),0), y = c(0,(sqrt(7)+1),0,-(sqrt(7)+1))), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  
+  
+  geom_point(aes(x, y), data = points, size = 6) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+__Euclidea__
+
+```{r echo=FALSE}
+euclidean <- as.matrix(dist(points[,-c(3,4)], method = "euclidean"))[1,-1]
+names(euclidean) <- LETTERS[1:length(euclidean)]
+euclidean
+```
+
+```{r echo=FALSE}
+ggplot() +
+  # Euclidean
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(5)),  color=color_euclidean, linetype = "dotted") +
+
+  geom_point(aes(x, y), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+```{r echo=FALSE}
+ggplot() +
+  # Euclidean
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(5)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(8)),  color=color_euclidean, linetype = "dotted") +
+  
+  geom_point(aes(x, y), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+```{r echo=FALSE}
+ggplot() +
+  # Euclidean
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(5)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(8)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = 3),  color=color_euclidean, linetype = "dotted") +
+  
+  geom_point(aes(x, y), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+__Chebyshev__
+
+```{r echo=FALSE}
+chebyshev <- as.matrix(dist(points[,-c(3,4)], method = "maximum"))[1,-1]
+names(chebyshev) <- LETTERS[1:length(chebyshev)]
+chebyshev
+```
+
+```{r echo=FALSE}
+ggplot() +
+  # Chebyshev
+  geom_rect(aes(xmin=-2, ymin=-2, xmax=2, ymax=2), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_point(aes(x, y), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+```{r echo=FALSE}
+ggplot() +
+  # Chebyshev
+  geom_rect(aes(xmin=-2, ymin=-2, xmax=2, ymax=2), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-(sqrt(7)), ymin=-(sqrt(7)), xmax=(sqrt(7)), ymax=(sqrt(7))), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_point(aes(x, y), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+```{r echo=FALSE}
+ggplot() +
+  # Chebyshev
+  geom_rect(aes(xmin=-2, ymin=-2, xmax=2, ymax=2), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-(sqrt(7)), ymin=-(sqrt(7)), xmax=(sqrt(7)), ymax=(sqrt(7))), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+
+  geom_rect(aes(xmin=-3, ymin=-3, xmax=3, ymax=3), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  
+
+  geom_point(aes(x, y), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+__Todos__
+
+```{r echo=FALSE}
+ggplot() +
+  # Manhattan
+  geom_polygon(aes(x=c(-3,0,3,0), y = c(0,3,0,-3), linetype = b), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-4,0,4,0), y = c(0,4,0,-4)), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-(sqrt(7)+1),0,(sqrt(7)+1),0), y = c(0,(sqrt(7)+1),0,-(sqrt(7)+1))), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+ # Euclidean
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(5)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(8)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = 3),  color=color_euclidean, linetype = "dotted") +
+  # Chebyshev
+  geom_rect(aes(xmin=-2, ymin=-2, xmax=2, ymax=2), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-3, ymin=-3, xmax=3, ymax=3), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-(sqrt(7)), ymin=-(sqrt(7)), xmax=(sqrt(7)), ymax=(sqrt(7))), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  # Plot
+  geom_point(aes(x, y), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  
+   scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+Si se trata de un problema de clasificación y lo que queremos es etiquetar X dados los otros puntos como training set
+
+```{r}
+ggplot() +
+  # Manhattan
+  geom_polygon(aes(x=c(-3,0,3,0), y = c(0,3,0,-3), linetype = b), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-4,0,4,0), y = c(0,4,0,-4)), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-(sqrt(7)+1),0,(sqrt(7)+1),0), y = c(0,(sqrt(7)+1),0,-(sqrt(7)+1))), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+ # Euclidean
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(5)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(8)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = 3),  color=color_euclidean, linetype = "dotted") +
+  # Chebyshev
+  geom_rect(aes(xmin=-2, ymin=-2, xmax=2, ymax=2), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-3, ymin=-3, xmax=3, ymax=3), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-(sqrt(7)), ymin=-(sqrt(7)), xmax=(sqrt(7)), ymax=(sqrt(7))), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  # Plot
+  geom_point(aes(x, y, shape = class, color = class), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  
+   scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_colour_manual(values = c("DimGray", "Orchid", "Dark Cyan")) +
+  coord_fixed() +
+  
+  theme_light() +
+  theme(legend.position = "none") +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+Los rankings que nos dan cada una de las distancias (las filas van en orden manhattan, euclidean, chebyshev) son:
+
+```{r}
+rankings <- bind_rows(manhattan, 
+          euclidean,
+          chebyshev)
+rankings <- t(apply(rankings, 1, consensus::ranking))
+rownames(rankings) <- c("manhattan", "euclidean", "chebyshev")
+rankings <- profile_of_rankings(rankings)
+rankings
+```
+
+Si fijamos k = 3...
+
+* A [triangle] 
+
+```{r}
+plurality(rankings)
+```
+
+
+```{r}
+borda_count(rankings)
+```
+
+```{r}
+two(rankings)
+```
+
+```{r}
+three(rankings)
+```
+
+```{r}
+five(rankings)
+```
+
+```{r}
+seven(rankings)
+```
+
+
+```{r}
+ggplot() +
+  # Manhattan
+  geom_polygon(aes(x=c(-3,0,3,0), y = c(0,3,0,-3), linetype = b), fill = "black", color=color_manhattan, alpha=0.3, linetype = "twodash") +
+  geom_polygon(aes(x=c(-4,0,4,0), y = c(0,4,0,-4)), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-(sqrt(7)+1),0,(sqrt(7)+1),0), y = c(0,(sqrt(7)+1),0,-(sqrt(7)+1))), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+ # Euclidean
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(5)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(8)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = 3),  color=color_euclidean, linetype = "dotted") +
+  # Chebyshev
+  geom_rect(aes(xmin=-2, ymin=-2, xmax=2, ymax=2), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-3, ymin=-3, xmax=3, ymax=3), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-(sqrt(7)), ymin=-(sqrt(7)), xmax=(sqrt(7)), ymax=(sqrt(7))), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  # Plot
+  geom_point(aes(x, y, shape = class, color = class), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  
+   scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_colour_manual(values = c("DimGray", "Orchid", "Dark Cyan")) +
+  coord_fixed() +
+  
+  theme_light() +
+  theme(legend.position = "none") +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+```{r}
+ggplot() +
+  # Manhattan
+  geom_polygon(aes(x=c(-3,0,3,0), y = c(0,3,0,-3), linetype = b), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-4,0,4,0), y = c(0,4,0,-4)), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-(sqrt(7)+1),0,(sqrt(7)+1),0), y = c(0,(sqrt(7)+1),0,-(sqrt(7)+1))), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+ # Euclidean
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(5)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(8)),  color=color_euclidean, linetype = "dotted", fill = "black", alpha=0.3) +
+  geom_circle(aes(x0 = 0, y0 = 0, r = 3),  color=color_euclidean, linetype = "dotted") +
+  # Chebyshev
+  geom_rect(aes(xmin=-2, ymin=-2, xmax=2, ymax=2), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-3, ymin=-3, xmax=3, ymax=3), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-(sqrt(7)), ymin=-(sqrt(7)), xmax=(sqrt(7)), ymax=(sqrt(7))), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  # Plot
+  geom_point(aes(x, y, shape = class, color = class), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  
+   scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_colour_manual(values = c("DimGray", "Orchid", "Dark Cyan")) +
+  coord_fixed() +
+  
+  theme_light() +
+  theme(legend.position = "none") +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+
+```{r}
+ggplot() +
+  # Manhattan
+  geom_polygon(aes(x=c(-3,0,3,0), y = c(0,3,0,-3), linetype = b), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-4,0,4,0), y = c(0,4,0,-4)), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-(sqrt(7)+1),0,(sqrt(7)+1),0), y = c(0,(sqrt(7)+1),0,-(sqrt(7)+1))), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+ # Euclidean
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(5)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(8)),  color=color_euclidean, linetype = "dotted", fill = "black", alpha=0) +
+  geom_circle(aes(x0 = 0, y0 = 0, r = 3),  color=color_euclidean, linetype = "dotted") +
+  # Chebyshev
+  geom_rect(aes(xmin=-2, ymin=-2, xmax=2, ymax=2), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-3, ymin=-3, xmax=3, ymax=3), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-(sqrt(7)), ymin=-(sqrt(7)), xmax=(sqrt(7)), ymax=(sqrt(7))), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  # Plot
+  geom_point(aes(x, y, shape = class, color = class), data = points, size = 10) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 5) +
+  
+   scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_colour_manual(values = c(color_circle, color_triangle, color_square)) +
+  coord_fixed() +
+  
+  theme_light() +
+  theme(legend.position = "none") +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
+```
+
+## Aplicando reglas
+
+Apply plurality:
+
+$$
+\begin{center}
+\begin{tabular}{ c c c c c c}
+ B & C & D & E & F & G
+ \frac{1}{4} & \frac{1}{4} & \frac{1}{4} & \frac{1}{4} & 0 & 0 \\ 
+ 0 & \frac{1}{2} & \frac{1}{2} & 0 & 0 & 0 \\  
+ 0 & \frac{1}{4} & \frac{1}{4} & 0 & \frac{1}{4} & \frac{1}{4} \\ 
+\end{tabular}
+\end{center}
+$$

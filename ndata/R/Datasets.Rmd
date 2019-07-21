@@ -6,6 +6,31 @@ output:
 ---
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+data_numerical_binary_l10 <- c("banknote", "haberman", "skin", "vertebral_column2", "weight_height")
+data_numerical_binary_m10 <- c("audit_risk", "ionospheren", "sonar")
+data_numerical_binary <- c(data_numerical_binary_l10, data_numerical_binary_m10)
+data_numerical_multiclass_l10 <-c("filtered_ecoli", "glass", "life_expectancy", "seeds", "vertebral_column3", "wifi_localization", "mini_yeast") #"iris", 
+data_numerical_multiclass_m10 <- c("mini_waves")
+
+# Keel 
+imbalance1 <- c("ecoli_0_vs_1", "iris0", "glass0", "glass1", "glass6", "haberman", "iris0", "wisconsin")
+imbalance2 <- c("ecoli4", 
+                "ecoli_0_1_4_6_vs_5", 
+                "ecoli_0_1_4_7_vs_2_3_5_6",
+                "ecoli_0_1_4_7_vs_5_6",
+                "ecoli_0_6_7_vs_5",
+                "glass2", 
+                "glass4", 
+                "glass5",
+                "yeast_0_3_5_9_vs_7_8") # "yeast6",
+imbalance_multiclassn <- c("ecoli", "glass", "new_thyroid", "penbased", "shuttle", "wine", "yeast")
+imbalance_multiclassc <- c("contraceptive", "balance", "hayes_roth")
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+options(warn=-1)
+library(DT)
+library(devtools)
 library(tidyverse)
 library(cowplot)
 library(glue)
@@ -42,44 +67,42 @@ plot_dist_cols <- function(the_data, type = "histogram") {
 }
 
 output_details <- function(datasets, latex = FALSE) {
-  info <- tribble(~name, ~instances, ~features, ~classes)
+  info <- tribble(~name, ~instances, ~features, ~classes, ~class_names, ~proportion, ~imbalance_ratio)
   for(dname in datasets) {
     d <- get(dname)
     info <- info %>% bind_rows(tibble(name = dname,
                                       instances = nrow(d),
                                       features = ncol(d) - 1,
                                       classes = length(unique(d$class)),
-                                      proportion = paste0("[",glue_collapse(round(as.numeric(prop.table(table(d$class))), 2), sep = "/"), "]")))
+                                      class_names = paste0("[",glue_collapse(names(table(d$class)), sep = "/"), "]"),
+                                      proportion = paste0("[",glue_collapse(round(as.numeric(prop.table(table(d$class))), 2), sep = "/"), "]"), 
+                                      imbalance_ratio = ifelse(length(names(table(d$class) == 2)), max(((table(d$class)[1])/(table(d$class)[2])), ((table(d$class)[2])/(table(d$class)[1]))), "-" )))
   }
   if(latex) return(xtable(info))
   return(info)
 }
 
+output_classes <- function(datasets, latex = FALSE) {
+  info <- tribble(~name, ~nclasses, ~namesclasses, ~proportion, ~imbalance_ratio)
+  for(dname in datasets) {
+    d <- get(dname)
+    info <- info %>% bind_rows(tibble(name = dname,
+                                      nclasses = length(unique(d$class)),
+                                      namesclasses = paste0("[",glue_collapse(names(table(d$class)), sep = "/"), "]"),
+                                      proportion = paste0("[",glue_collapse(round(as.numeric(prop.table(table(d$class))), 2), sep = "/"), "]"),
+                                      imbalance_ratio = ifelse(length(names(table(d$class) == 2)), max(((table(d$class)[1])/(table(d$class)[2])), ((table(d$class)[2])/(table(d$class)[1]))), "-" )))
+  }
+  if(latex) return(xtable(info))
+  return(info)
+}
 ```
 
 ```{r include=FALSE}
-load(file = "../all.RData")
+#load(file = "../all.RData")
+datas <- list.files("../data", full.names = TRUE)
+lapply(datas,load,.GlobalEnv)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-library(DT)
-library(devtools)
-library(ndata)
-data_numerical_binary_l10 <- c("banknote", "haberman", "skin", "vertebral_column", "weight_height")
-data_numerical_binary_m10 <- c("audit_risk", "ionosphere", "sonar")
-
-# Keel > imbalance > binary > ratio1
-imbalance1 <- c("imb_ecoli_0_vs_1", "imb_glass0", "imb_glass1", "imb_glass6", "imb_haberman", "imb_iris0", "imb_wisconsin")
-imbalance2 <- c("imb_ecoli4", 
-                "imb_ecoli_0_1_4_6_vs_5", 
-                "imb_ecoli_0_1_4_7_vs_2_3_5_6",
-                "imb_ecoli_0_1_4_7_vs_5_6",
-                "imb_ecoli_0_6_7_vs_5",
-                "imb_glass2", 
-                "imb_glass4", 
-                "imb_glass5",
-                "imb_yeast_0_3_5_9_vs_7_8") # "imb_yeast6",
-```
 
 UCI and Kaggle datasets
 
@@ -107,6 +130,7 @@ UCI and Kaggle datasets
       * [Yeast](#Yeast)
 * **Mixed**
   * **Binary**
+  * **Multiclass**
 
 Keel datasets
 
@@ -123,23 +147,23 @@ Keel datasets
     * Imbalance ratio higher than 9
       * [ecoli4](#ecoli4)
       * [ecoli_0_1_4_6_vs_5](#ecoli_0_1_4_6_vs_5)
-      * [imb_ecoli_0_1_4_7_vs_2_3_5_6](#imb_ecoli_0_1_4_7_vs_2_3_5_6)
-      * [imb_ecoli_0_1_4_7_vs_5_6](#imb_ecoli_0_1_4_7_vs_5_6)
+      * [ecoli_0_1_4_7_vs_2_3_5_6](#ecoli_0_1_4_7_vs_2_3_5_6)
+      * [ecoli_0_1_4_7_vs_5_6](#ecoli_0_1_4_7_vs_5_6)
       * [ecoli_0_6_7_vs_5](#ecoli_0_6_7_vs_5)
       * [glass0](#glass2)
       * [glass1](#glass4)
       * [glass6](#glass5)
-      
-      imbalance2 <- c("imb_ecoli4", 
-                "imb_ecoli_0_1_4_6_vs_5", 
-                
-                "imb_ecoli_0_6_7_vs_5",
-                "imb_glass2", 
-                "imb_glass4", 
-                "imb_glass5",
-                "imb_yeast_0_3_5_9_vs_7_8")
-
   * **Multiclass**
+    * [balance](#balance)
+    * [contraceptive](#contraceptive)
+    * [ecoli](#ecoli)
+    * [hayes_roth](#hayes_roth)
+    * [glass](#glass)
+    * [new_thyroid](#new_thyroid)
+    * [penbased](#penbased)
+    * [shuttle](#shuttle)
+    * [wine](#wine)
+    * [yeast](#yeast)
 
 * **Noisy**
   * **[cn] Class noise**
@@ -159,7 +183,16 @@ Keel datasets
 
 ## Binary
 
+```{r}
+output_details(c(data_numerical_binary_l10, data_numerical_binary_m10))
+```
+
 ### < 10
+
+```{r}
+output_details(data_numerical_binary_l10)
+```
+
 
 #### Banknote authentication {#Banknote}
 
@@ -314,6 +347,10 @@ plot_dist_cols(weight_height)
 - The number of rows has been reduced to `r nrow(mini_weight_height)`
 
 ### >= 10
+
+```{r}
+output_details(data_numerical_binary_m10)
+```
 
 #### Audit risk {#Audit-risk}
 
@@ -743,141 +780,164 @@ Imbalanced data sets are a special case of classification problem where the clas
 
 #### Binary: Imbalance ratio between 1.5 and 9
 
-```{r}
+```{r echo=FALSE}
 output_details(imbalance1)
 ```
 
+##### ecoli_0_vs_1 {#ecoli_0_vs_1}
+
 ```{r echo=FALSE}
-imb_ecoli_0_vs_1
+ecoli_0_vs_1
 ```
 
 ```{r echo=FALSE}
-plot_dist_cols(imb_ecoli_0_vs_1)
+plot_dist_cols(ecoli_0_vs_1)
+```
+
+##### glass0 {#glass0}
+
+```{r echo=FALSE}
+glass0
 ```
 
 ```{r echo=FALSE}
-imb_glass0
+plot_dist_cols(glass0)
+```
+
+##### glass1 {#glass1}
+
+```{r echo=FALSE}
+glass1
 ```
 
 ```{r echo=FALSE}
-plot_dist_cols(imb_glass0)
+plot_dist_cols(glass1)
+```
+
+##### glass6 {#glass6}
+
+```{r echo=FALSE}
+glass6
 ```
 
 ```{r echo=FALSE}
-imb_glass1
+plot_dist_cols(glass6)
+```
+
+##### haberman {#haberman}
+
+```{r echo=FALSE}
+haberman
 ```
 
 ```{r echo=FALSE}
-plot_dist_cols(imb_glass1)
+plot_dist_cols(haberman)
+```
+
+##### iris0 {#iris0}
+
+```{r echo=FALSE}
+iris0
 ```
 
 ```{r echo=FALSE}
-imb_glass6
+plot_dist_cols(iris0)
+```
+
+##### winsconsin {#winsconsin}
+
+```{r echo=FALSE}
+wisconsin
 ```
 
 ```{r echo=FALSE}
-plot_dist_cols(imb_glass6)
+plot_dist_cols(wisconsin)
 ```
-
-```{r echo=FALSE}
-imb_haberman
-```
-
-```{r echo=FALSE}
-plot_dist_cols(imb_haberman)
-```
-
-```{r echo=FALSE}
-imb_iris0
-```
-
-```{r echo=FALSE}
-plot_dist_cols(imb_iris0)
-```
-
-```{r echo=FALSE}
-imb_wisconsin
-```
-
-```{r echo=FALSE}
-plot_dist_cols(imb_wisconsin)
-```
-
 
 #### Binary: Imbalance ratio higher than 9
 
-      * [ecoli4](#ecoli4)
-      * [ecoli_0_1_4_6_vs_5](#ecoli_0_1_4_6_vs_5)
-      * [ecoli_0_1_4_7_vs_2_3_5_6](#imb_ecoli_0_1_4_7_vs_2_3_5_6)
-      * [ecoli_0_1_4_7_vs_5_6](#imb_ecoli_0_1_4_7_vs_5_6)
-      * [ecoli_0_6_7_vs_5](#ecoli_0_6_7_vs_5)
-      * [glass2](#glass2)
-      * [glass4](#glass4)
-      * [glass5](#glass5)
-      
-```{r}
-imb_ecoli4
-```
-      
-```{r}
-plot_dist_cols(imb_ecoli4)
+```{r echo=FALSE}
+output_details(imbalance1)
 ```
 
-```{r}
-imb_ecoli_0_1_4_6_vs_5
+##### ecoli4 {#ecoli4}
+      
+```{r echo=FALSE}
+ecoli4
 ```
       
-```{r}
-plot_dist_cols(imb_ecoli_0_1_4_6_vs_5)
+```{r echo=FALSE}
+plot_dist_cols(ecoli4)
 ```
 
-```{r}
-imb_ecoli_0_1_4_7_vs_2_3_5_6
+##### ecoli_0_1_4_6_vs_5 {#ecoli_0_1_4_6_vs_5}
+
+```{r echo=FALSE}
+ecoli_0_1_4_6_vs_5
 ```
       
-```{r}
-plot_dist_cols(imb_ecoli_0_1_4_7_vs_2_3_5_6)
+```{r echo=FALSE}
+plot_dist_cols(ecoli_0_1_4_6_vs_5)
 ```
 
-```{r}
-imb_ecoli_0_1_4_7_vs_5_6
+##### ecoli_0_1_4_7_vs_2_3_5_6 {#ecoli_0_1_4_7_vs_2_3_5_6}
+
+```{r echo=FALSE}
+ecoli_0_1_4_7_vs_2_3_5_6
 ```
       
-```{r}
-plot_dist_cols(imb_ecoli_0_1_4_7_vs_5_6)
+```{r echo=FALSE}
+plot_dist_cols(ecoli_0_1_4_7_vs_2_3_5_6)
 ```
 
+##### ecoli_0_1_4_7_vs_5_6 {#ecoli_0_1_4_7_vs_5_6}
 
-```{r}
-imb_ecoli_0_6_7_vs_5
+```{r echo=FALSE}
+ecoli_0_1_4_7_vs_5_6
 ```
       
-```{r}
-plot_dist_cols(imb_ecoli_0_6_7_vs_5)
+```{r echo=FALSE}
+plot_dist_cols(ecoli_0_1_4_7_vs_5_6)
 ```
 
-```{r}
-imb_glass2
+##### ecoli_0_6_7_vs_5 {#ecoli_0_6_7_vs_5}
+
+```{r echo=FALSE}
+ecoli_0_6_7_vs_5
 ```
       
-```{r}
-plot_dist_cols(imb_glass2)
+```{r echo=FALSE}
+plot_dist_cols(ecoli_0_6_7_vs_5)
 ```
 
-```{r}
-imb_glass4
+##### glass2 {#glass2}
+
+```{r echo=FALSE}
+glass2
 ```
       
-```{r}
-plot_dist_cols(imb_glass4)
+```{r echo=FALSE}
+plot_dist_cols(glass2)
 ```
 
-```{r}
-imb_glass5
+##### glass4 {#glass4}
+
+```{r echo=FALSE}
+glass4
 ```
       
-```{r}
-plot_dist_cols(imb_glass5)
+```{r echo=FALSE}
+plot_dist_cols(glass4)
+```
+
+##### glass5 {#glass5}
+
+```{r echo=FALSE}
+glass5
+```
+      
+```{r echo=FALSE}
+plot_dist_cols(glass5)
 ```
       
 ### Multiclass
@@ -887,8 +947,6 @@ plot_dist_cols(imb_glass5)
 ### Class noise
 
 ### Attribute noise
-
-## 
 
 <!-- Numerical > Multiclass > Less than 10 attributes --> 
 

@@ -5,8 +5,6 @@ library(foreign)
 objects_numerical_binary_l10 <- c("banknote", "haberman", "skin", "vertebral_column", "weight_height")
 objects_numerical_binary_m10 <- c("audit_risk", "ionosphere", "sonar")
 
-output_details(data_numerical_binary_l10)
-
 # Audit risk --------------------------------------------------------------
 
 audit_risk <- read.table(file.path("files", "audit_risk.csv"),
@@ -15,8 +13,10 @@ audit_risk <- read.table(file.path("files", "audit_risk.csv"),
 audit_risk <- audit_risk %>% as_tibble(audit_risk) %>%
   rename(class = Risk) %>%
   mutate(LOCATION_ID = NULL,
-         Detection_Risk = NULL)
+         Detection_Risk = NULL,
+         class = factor(class))
 audit_risk <- audit_risk[, c("class", setdiff(colnames(audit_risk), "class"))]
+audit_risk <- audit_risk %>% mutate(class = fct_relevel(class, "1", "0"))
 
 set.seed(123)
 mini_audit_risk <- createDataPartition(audit_risk$class, p = 0.3, list = FALSE)
@@ -35,6 +35,7 @@ banknote <- read_csv(file.path("files", "bank_note.csv"),
                                     "entropy",
                                     "class"))
 banknote <- banknote[, c("class", setdiff(colnames(banknote), "class"))]
+banknote <- banknote %>% mutate(class = fct_relevel(class, "1", "0"))
 
 set.seed(123)
 mini_banknote <- createDataPartition(banknote$class, p = 0.1, list = FALSE)
@@ -75,7 +76,7 @@ haberman <- read_csv(file.path("files", "haberman.csv"),
                                       class = col_factor()),
                      col_names = c("age", "year", "nodes", "class"))
 haberman <- haberman[, c("class", setdiff(colnames(haberman), "class"))]
-
+haberman <- haberman %>% mutate(class = fct_relevel(class, "2", "1"))
 save(haberman, file = "data/haberman.RData")
 
 
@@ -156,6 +157,7 @@ save(skin, mini_skin, file = "data/skin.RData")
 sonar <- read.csv(file.path("files", "sonar.csv"), header = FALSE)
 sonar <- as_tibble(sonar) %>% rename(class = V61) %>% mutate(class = factor(class))
 sonar <- sonar[, c("class", setdiff(colnames(sonar), "class"))]
+sonar <- sonar %>% mutate(class = fct_relevel(class, "R", "M"))
 
 save(sonar, file = "data/sonar.RData")
 
@@ -164,6 +166,7 @@ save(sonar, file = "data/sonar.RData")
 vertebral_column2 <- read.arff(file.path("files", "vetebral_column_2.arff"))
 vertebral_column2 <- as_tibble(vertebral_column2)
 vertebral_column2 <- vertebral_column2[, c("class", setdiff(colnames(vertebral_column2), "class"))]
+vertebral_column2 <- vertebral_column2 %>% mutate(class = fct_relevel(class, "Normal", "Abnormal"))
 
 vertebral_column3 <- read.arff(file.path("files", "vertebral_column_3.arff"))
 vertebral_column3 <- as_tibble(vertebral_column3)
@@ -186,6 +189,20 @@ mini_weight_height <- weight_height[mini_weight_height, ]
 
 save(weight_height, mini_weight_height, file = "data/weight_height.RData")
 
+
+# Waves -------------------------------------------------------------------
+
+waves <- read_csv("files/waves.csv", col_names = FALSE)
+waves$X22 <- as.factor(waves$X22)
+waves <- waves %>% rename(class = X22)
+waves <- waves[, c("class", setdiff(colnames(waves), "class"))]
+
+set.seed(123)
+mini_waves <- createDataPartition(waves$class, p = 0.05, list = FALSE)
+mini_waves <- waves[mini_waves,]
+
+save(waves, mini_waves, file = "data/waves.RData")
+
 # Wireless Indoor Localization --------------------------------------------
 
 wifi_localization <- read_tsv(file.path("files", "wifi_localization.csv"),
@@ -197,12 +214,14 @@ set.seed(123)
 mini_wifi_localization <- createDataPartition(wifi_localization$class, p = 0.1, list = FALSE)
 mini_wifi_localization <- wifi_localization[mini_wifi_localization,]
 
+save(wifi_localization, mini_wifi_localization, file = "data/wifi_localization.RData")
+
 # Yeast -------------------------------------------------------------------
 
 yeast <- read.table(file.path("files", "yeast.csv"))
 colnames(yeast) <-  c("seq", "mcg", "gvh", "alm", "mit", "erl", "pox", "vac", "nuc", "class")
 yeast$seq <- NULL
-yeast <- as.tibble(yeast)
+yeast <- as_tibble(yeast)
 yeast <- yeast[, c("class", setdiff(colnames(yeast), "class"))]
 
 
