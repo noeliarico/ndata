@@ -11,6 +11,10 @@ data_numerical_binary_m10 <- c("audit_risk", "ionospheren", "sonar")
 data_numerical_binary <- c(data_numerical_binary_l10, data_numerical_binary_m10)
 data_numerical_multiclass_l10 <-c("filtered_ecoli", "glass", "life_expectancy", "seeds", "vertebral_column3", "wifi_localization", "mini_yeast") #"iris", 
 data_numerical_multiclass_m10 <- c("mini_waves")
+data_mixed_binary_l10 <- c("caesarian", "mini_mammographic_masses")#, "primary_tumor")
+data_mixed_binary_m10 <- c( "mini_adult", "mini_travel_insurance", "statlog")#"ionosphere", 
+data_mixed_multiclass <- c("flags", "teaching_assistant", "contraceptive")#"mini_abalone"
+data_mixes_binary <- c(mix_binary_l10, mix_binary_m10)
 
 # Keel 
 imbalance1 <- c("ecoli_0_vs_1", "iris0", "glass0", "glass1", "glass6", "haberman", "iris0", "wisconsin")
@@ -69,6 +73,7 @@ plot_dist_cols <- function(the_data, type = "histogram") {
 output_details <- function(datasets, latex = FALSE) {
   info <- tribble(~name, ~instances, ~features, ~classes, ~class_names, ~proportion, ~imbalance_ratio)
   for(dname in datasets) {
+    print(dname)
     d <- get(dname)
     info <- info %>% bind_rows(tibble(name = dname,
                                       instances = nrow(d),
@@ -76,33 +81,12 @@ output_details <- function(datasets, latex = FALSE) {
                                       classes = length(unique(d$class)),
                                       class_names = paste0("[",glue_collapse(names(table(d$class)), sep = "/"), "]"),
                                       proportion = paste0("[",glue_collapse(round(as.numeric(prop.table(table(d$class))), 2), sep = "/"), "]"), 
-                                      imbalance_ratio = ifelse(length(names(table(d$class) == 2)), max(((table(d$class)[1])/(table(d$class)[2])), ((table(d$class)[2])/(table(d$class)[1]))), "-" )))
-  }
-  if(latex) return(xtable(info))
-  return(info)
-}
-
-output_classes <- function(datasets, latex = FALSE) {
-  info <- tribble(~name, ~nclasses, ~namesclasses, ~proportion, ~imbalance_ratio)
-  for(dname in datasets) {
-    d <- get(dname)
-    info <- info %>% bind_rows(tibble(name = dname,
-                                      nclasses = length(unique(d$class)),
-                                      namesclasses = paste0("[",glue_collapse(names(table(d$class)), sep = "/"), "]"),
-                                      proportion = paste0("[",glue_collapse(round(as.numeric(prop.table(table(d$class))), 2), sep = "/"), "]"),
-                                      imbalance_ratio = ifelse(length(names(table(d$class) == 2)), max(((table(d$class)[1])/(table(d$class)[2])), ((table(d$class)[2])/(table(d$class)[1]))), "-" )))
+                                      imbalance_ratio = ifelse(length(names(table(d$class))) == 2, max(((table(d$class)[1])/(table(d$class)[2])), ((table(d$class)[2])/(table(d$class)[1]))), -1 )))
   }
   if(latex) return(xtable(info))
   return(info)
 }
 ```
-
-```{r include=FALSE}
-#load(file = "../all.RData")
-datas <- list.files("../data", full.names = TRUE)
-lapply(datas,load,.GlobalEnv)
-```
-
 
 UCI and Kaggle datasets
 
