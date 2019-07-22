@@ -11,10 +11,8 @@ dplyr
 stringr
 forcats
 kableExtra
-foreign
-cowplot
 DT
 devtools
 usethis
-ndata
+cowplot
 glue

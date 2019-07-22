@@ -105,7 +105,7 @@ caesarian <- caesarian[, c("class", setdiff(colnames(caesarian), "class"))]
 change <- colnames(caesarian)[colnames(caesarian) != "class"]
 caesariann <- caesarian %>% mutate_at(change, function(x) {as.numeric(as.character(x))})
 
-save(caesarian, caesariann, file = "caesarian.RData")
+save(caesarian, caesariann, file = "data/caesarian.RData")
 
 
 # Cpu ---------------------------------------------------------------------
@@ -115,7 +115,7 @@ cpu <- cpu[, c("class", setdiff(colnames(cpu), "class"))]
 cpu_discretized <- cpu
 cpu_discretized$class <- (discretize(cpu$class, breaks = 2))
 
-save(cpu, cpu_discretized, file = "cpu.RData")
+save(cpu, cpu_discretized, file = "data/cpu.RData")
 
 # Contraceptive -----------------------------------------------------------
 
@@ -397,6 +397,7 @@ travel_insurance_original <- read_csv(file.path("files", "travel_insurance.csv")
                              skip = 1) %>%
               rename(class = claim)
 travel_insurance_original <- travel_insurance_original[, c("class", setdiff(colnames(travel_insurance_original), "class"))]
+travel_insurance_original <- travel_insurance_original %>% mutate(class = fct_relevel(class, "Yes", "No"))
 
 travel_insurance <- travel_insurance_original %>% drop_na
 

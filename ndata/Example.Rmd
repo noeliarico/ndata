@@ -427,18 +427,3 @@ ggplot() +
   ylab("y") +    
   theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
 ```
-
-## Aplicando reglas
-
-Apply plurality:
-
-$$
-\begin{center}
-\begin{tabular}{ c c c c c c}
- B & C & D & E & F & G
- \frac{1}{4} & \frac{1}{4} & \frac{1}{4} & \frac{1}{4} & 0 & 0 \\ 
- 0 & \frac{1}{2} & \frac{1}{2} & 0 & 0 & 0 \\  
- 0 & \frac{1}{4} & \frac{1}{4} & 0 & \frac{1}{4} & \frac{1}{4} \\ 
-\end{tabular}
-\end{center}
-$$
