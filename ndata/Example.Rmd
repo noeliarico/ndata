@@ -6,6 +6,8 @@ output:
 ---
 
 ```{r include=FALSE}
+library(devtools)
+install_github("noeliarico/consensus/consensus", force = TRUE)
 library(tidyverse)
 library(ggforce)
 library(consensus)
@@ -295,6 +297,8 @@ ggplot() +
   theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
 ```
 
+X es realmente un triángulo
+
 Los rankings que nos dan cada una de las distancias (las filas van en orden manhattan, euclidean, chebyshev) son:
 
 ```{r}
@@ -309,10 +313,12 @@ rankings
 
 Si fijamos k = 3...
 
-* A [triangle] 
+- Manhattan -> empates
+- Euclidean -> empates
+- Chebyshev -> ok
 
 ```{r}
-plurality(rankings)
+plurality(rankings, verbose = TRUE )
 ```
 
 
@@ -321,21 +327,22 @@ borda_count(rankings)
 ```
 
 ```{r}
-two(rankings)
+two(rankings, verbose = TRUE)
 ```
 
 ```{r}
-three(rankings)
+three(rankings, verbose = TRUE)
 ```
 
 ```{r}
-five(rankings)
+five(rankings, seePoints = TRUE)
 ```
 
 ```{r}
-seven(rankings)
+seven(rankings, seePoints = TRUE)
 ```
 
+Dibujando el area de los que incluyen los 3k más próximos:
 
 ```{r}
 ggplot() +
