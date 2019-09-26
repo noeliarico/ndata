@@ -5,6 +5,21 @@ output:
   html_notebook: default
 ---
 
+```{r}
+# points <- tribble(~ x, ~ y,
+#                   0, 0, # X
+#                   3, 0, # A
+#                   2, 1, # B
+#                   1, 2, # C
+#                   0, 3, # D
+#                   2, 2, # E
+#                  -1, -sqrt(7)) %>%
+#                  #-2, -2) %>%
+#   mutate(name = c("X", LETTERS[1:(n()-1)]),
+#          class = factor(c("circle", "square", "square", "triangle", "triangle", "triangle", "square"), levels = c("circle", "triangle", "square")))
+```
+
+
 ```{r include=FALSE}
 library(devtools)
 install_github("noeliarico/consensus/consensus", force = TRUE)
@@ -24,16 +39,45 @@ color_square <- "Dark Slate Gray"
 
 ```{r include=FALSE}
 points <- tribble(~ x, ~ y,
-                  0, 0,
-                  3, 0,
-                  2, 1,
-                  1, 2,
-                  0, 3,
-                  2, 2,
-                 -1, -sqrt(7)) %>%
+                  0, 0, # X
+                  2.5, -2.5, # A
+                  2, 1, # B
+                  1, 2, # C
+                  0, 3, # D
+                  3, 2.5, # E
+                 -1, -sqrt(7)) %>% # F
                  #-2, -2) %>%
   mutate(name = c("X", LETTERS[1:(n()-1)]),
          class = factor(c("circle", "square", "square", "triangle", "triangle", "triangle", "square"), levels = c("circle", "triangle", "square"))) 
+```
+
+         
+```{r echo=FALSE}
+ggplot() +
+  # Manhattan
+  geom_polygon(aes(x=c(-3,0,3,0), y = c(0,3,0,-3), linetype = b), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-4,0,4,0), y = c(0,4,0,-4)), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+  geom_polygon(aes(x=c(-(sqrt(7)+1),0,(sqrt(7)+1),0), y = c(0,(sqrt(7)+1),0,-(sqrt(7)+1))), fill = "black", color=color_manhattan, alpha=0, linetype = "twodash") +
+ # Euclidean
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(5)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = sqrt(8)),  color=color_euclidean, linetype = "dotted") +
+  geom_circle(aes(x0 = 0, y0 = 0, r = 3),  color=color_euclidean, linetype = "dotted") +
+  # Chebyshev
+  geom_rect(aes(xmin=-2, ymin=-2, xmax=2, ymax=2), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-3, ymin=-3, xmax=3, ymax=3), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  geom_rect(aes(xmin=-(sqrt(7)), ymin=-(sqrt(7)), xmax=(sqrt(7)), ymax=(sqrt(7))), fill = "black", color=color_chebyshev, alpha=0, linetype = "longdash") +
+  # Plot
+  geom_point(aes(x, y), data = points, size = 5) +
+  geom_text(aes(x, y, label = name), data = points, color = "white", fontface = "bold", size = 3) +
+  
+   scale_x_continuous(limits = c(-4, 4), breaks = -4:4) +
+  scale_y_continuous(limits = c(-4, 4), breaks = -4:4) +
+  
+  coord_fixed() +
+  theme_light() +
+  xlab("x") +
+  ylab("y") +    
+  theme(axis.title.y = element_text(angle = 0, vjust = 0.5)) 
 ```
 
 Dados los siguientes puntos:
